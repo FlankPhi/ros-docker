@@ -1,33 +1,35 @@
 # Name: rosDocker
-# Description: installs ROS-indigo base in ubuntu trusty environment
+# Description: installs ROS-melodic base in ubuntu bionic environment
 #
 # VERSION       1.1
 #
 
 # Use the ubuntu base image
-FROM ubuntu:trusty
+FROM ubuntu:bionic
 
-MAINTAINER Oleg Blinnikov, osblinnikov@gmail.com
+MAINTAINER Mikal Berge, mikal@pickr.ai
+
+# Set the inviromet to be non interative 
+ENV DEBIAN_FRONTEND noninteractive
 
 # make sure the package repository is up to date
-RUN apt-get -y update
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -y debian-keyring debian-archive-keyring
 
 # install ROS key
 RUN apt-get install -y wget
-RUN wget --no-check-certificate https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O - | apt-key add -
 
 # for TESTS of exposing port
 RUN apt-get install -y netcat
 
 # update ros repository
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN sh -c 'echo "deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu trusty main" > /etc/apt/sources.list.d/node-latest.list'
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B9316A7BC7917B12
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
 RUN apt-get update
 
 # install ROS
-RUN apt-get install -y ros-indigo-ros-base
+RUN apt-get install -y ros-melodic-ros-base
 
 # enables you to easily download many source trees for ROS packages with one command
 RUN apt-get install -y python-rosinstall
@@ -41,7 +43,9 @@ RUN rosdep init
 # Adding vnc server
 # no Upstart or DBus
 # https://github.com/dotcloud/docker/issues/1724#issuecomment-26294856
-RUN apt-mark hold initscripts udev plymouth mountall
+RUN apt-get install -y openvpn
+RUN apt-get install -y util-linux sysvinit-utils
+RUN apt-mark hold util-linux sysvinit-utils udev plymouth 
 RUN dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl
 
 RUN apt-get install -y --force-yes --no-install-recommends supervisor \
@@ -57,6 +61,22 @@ RUN apt-get install -y --force-yes --no-install-recommends supervisor \
 
 ADD noVNC /noVNC
 ADD supervisord.conf /
+
+
+RUN cd ~ && git clone --branch 4.0.0 https://github.com/Itseez/opencv.git && \ 
+    cd opencv && \
+    cd ~ && git clone --branch 4.0.0 https://github.com/Itseez/opencv_contrib.git && \
+    cd opencv_contrib && \
+    cd ~/opencv && mkdir -p build && cd build && \
+    cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \ 
+    -D INSTALL_C_EXAMPLES=ON \ 
+    -D INSTALL_PYTHON_EXAMPLES=ON \ 
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \ 
+    -D BUILD_EXAMPLES=OFF .. && \
+    make -j4 && \
+    make install && \ 
+    ldconfig
 
 # Launch bash when launching the container
 ADD startcontainer /usr/local/bin/startcontainer
@@ -82,8 +102,8 @@ RUN HOME=/home/ros rosdep update
 
 # Create a ROS workspace for the ROS user.
 RUN mkdir -p /home/ros/workspace/src
-RUN /bin/bash -c '. /opt/ros/indigo/setup.bash; catkin_init_workspace /home/ros/workspace/src'
-RUN /bin/bash -c '. /opt/ros/indigo/setup.bash; cd /home/ros/workspace; catkin_make'
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; catkin_init_workspace /home/ros/workspace/src'
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /home/ros/workspace; catkin_make'
 ADD bashrc /.bashrc
 ADD bashrc /home/ros/.bashrc
 
