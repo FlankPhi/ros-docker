@@ -4,6 +4,7 @@
 # Absolute path this script is in. /home/user/bin
 #SCRIPTPATH=`dirname $SCRIPT`
 
-docker run -p 6080:6080 -p 11311:11311 -v c:/Users/Mikal/Documents/GitHub/ros-docker/workspaceSrc:/home/ros/workspace/src -t -i rosdocker 
+#docker run -p 6080:6080 -p 11311:11311 -v c:/Users/Mikal/Documents/GitHub/ros-docker/workspaceSrc:/home/ros/workspace/src -t -i mikalberge/rosdocker 
+docker run -p 6080:6080 -p 11311:11311  mikalberge/rosdocker 
 #ROSDOCKER=$(docker run -t -i -d=true osblinnikov/ros)
 #pipework br1 $ROSDOCKER 192.168.1.1/24

@@ -46,3 +46,16 @@ TODO
 ---
 
 Figure out how to export ROS dynamic tcp/udp ports from docker container. Seems like [coreos-rudder](https://coreos.com/blog/introducing-rudder/) can help with providing virtual network
+
+Postgres docker
+=========
+Postgres container to store keep the local database for pickr
+
+To run the container simply type:
+    docker run --rm -it -p 5432:5432/tcp postgres:latest
+run with password pass arg:
+    -e POSTGRES_PASSWORD=mysecretpassword
+select user using: 
+    -d postgres -> admin rights 
+    -d pickr    -> admin rights
+    -d user     -> INSERT  UPDATE 

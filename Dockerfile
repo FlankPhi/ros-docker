@@ -111,7 +111,7 @@ RUN mkdir -p /home/ros/Desktop
 ADD xterm /home/ros/Desktop/
 
 CMD ["/bin/bash"]
-ENTRYPOINT ["/usr/local/bin/startcontainer"]
+#ENTRYPOINT ["/usr/local/bin/startcontainer"]
 
 
 
